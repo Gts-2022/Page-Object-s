@@ -1,17 +1,16 @@
 package ru.netology.web.test;
 
-import dev.failsafe.internal.util.Assert;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.netology.web.data.DataHelper;
 import ru.netology.web.page.DashboardPage;
 import ru.netology.web.page.LoginPageV2;
-import ru.netology.web.page.MoneyTransfer;
 
 import static com.codeborne.selenide.Selenide.open;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static ru.netology.web.data.DataHelper.getFirstCardNumber;
+import static ru.netology.web.data.DataHelper.getSecondCardNumber;
 
 class MoneyTransferTest {
     DashboardPage dashboardPage;
@@ -27,70 +26,62 @@ class MoneyTransferTest {
     }
 
     @Test
-    void  shouldTransferMoneyTo1Card500 () {// Перевод денежных средств на 1 карту 500 рублей
-        int balanceFirstCard = dashboardPage.getFirstCardBalance();
-        int balanceSecondCard = dashboardPage.getSecondCardBalance();
-        val moneyTransfer = dashboardPage.firstCardButton();
-        val infoCard = DataHelper.getSecondCardNumber();
+    void shouldTransferMoneyTo2Card500() {// Перевод 500 рублей
         String amount = "500";
+        var firstCardInfo = getFirstCardNumber();
+        var secondCardInfo = getSecondCardNumber();
+        var balanceFirstCard = dashboardPage.getCardBalance(firstCardInfo);
+        var balanceSecondCard = dashboardPage.getCardBalance(secondCardInfo);
+        var moneyTransfer = dashboardPage.firstCardButton();
+        var infoCard = DataHelper.getFirstCardNumber();
         moneyTransfer.validTransfer(amount, infoCard);
-        int expectedBalanceFirstCard = balanceFirstCard + Integer.parseInt(amount);
-        int expectedBalanceSecondCard = balanceSecondCard - Integer.parseInt(amount);
-        assertEquals(expectedBalanceFirstCard, dashboardPage.getFirstCardBalance());
-        assertEquals(expectedBalanceSecondCard, dashboardPage.getSecondCardBalance());
-    }
-    @Test
-    void   shouldTransferMoneyTo1Card9000 () {// Перевод 9000 рублей
-        int balanceFirstCard = dashboardPage.getFirstCardBalance();
-        int balanceSecondCard = dashboardPage.getSecondCardBalance();
-        val moneyTransfer = dashboardPage.firstCardButton();
-        val infoCard = DataHelper.getSecondCardNumber();
-        String amount = "9000";
-        moneyTransfer.validTransfer(amount, infoCard);
-        int expectedBalanceFirstCard = balanceFirstCard + Integer.parseInt(amount);
-        int expectedBalanceSecondCard = balanceSecondCard - Integer.parseInt(amount);
-        assertEquals(expectedBalanceFirstCard, dashboardPage.getFirstCardBalance());
-        assertEquals(expectedBalanceSecondCard, dashboardPage.getSecondCardBalance());
-    }
-    @Test
-    void  shouldTransferMoneyTo1CardMoreThanBalance () {
-        // Необходимо перевести 12000 рублей, что больше баланса карты
-        int balanceFirstCard = dashboardPage.getFirstCardBalance();
-        int balanceSecondCard = dashboardPage.getSecondCardBalance();
-        val moneyTransfer = dashboardPage.firstCardButton();
-        val infoCard = DataHelper.getSecondCardNumber();
-        String amount = "12000";
-        moneyTransfer.validTransfer(amount, infoCard);
-        int expectedBalanceFirstCard = balanceFirstCard + Integer.parseInt(amount);
-        int expectedBalanceSecondCard = balanceSecondCard - Integer.parseInt(amount);
-        assertEquals(expectedBalanceFirstCard, dashboardPage.getFirstCardBalance());
-        assertEquals(expectedBalanceSecondCard, dashboardPage.getSecondCardBalance());
-    }
-    @Test
+        var expectedBalanceFirstCard = balanceFirstCard - Integer.parseInt(amount);
+        var expectedBalanceSecondCard = balanceSecondCard + Integer.parseInt(amount);
+        var actualBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo);
+        var actualBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo);
+        assertEquals(expectedBalanceFirstCard, actualBalanceFirstCard);
+        assertEquals(expectedBalanceSecondCard, actualBalanceSecondCard);
 
-    void  shouldErrorMessageWithoutSpecifyingWhereTransferCameFrom () {
+    }
+
+    @Test
+    void shouldErrorMessageWithoutSpecifyingWhereTransferCameFrom() {
         // Сообщение об ошибке без указания источника перевода
         val moneyTransfer = dashboardPage.firstCardButton();
         val infoCard = DataHelper.getFirstCardNumber();
         String amount = "1000";
-        moneyTransfer.transferError( amount, infoCard );
+        moneyTransfer.transferError(amount, infoCard);
         moneyTransfer.getErrorNotification();
+
     }
 
     @Test
-    void  shouldTransfer0Rur(){//Необходимо перевести 0 рублей
-        int balanceFirstCard = dashboardPage.getFirstCardBalance();
-        int balanceSecondCard = dashboardPage.getSecondCardBalance();
-        val moneyTransfer = dashboardPage.firstCardButton();
-        val infoCard = DataHelper.getSecondCardNumber();
+    void shouldTransfer0Rur() {//Необходимо перевести 0 рублей
         String amount = "0";
+        var firstCardInfo = getFirstCardNumber();
+        var secondCardInfo = getSecondCardNumber();
+        var balanceFirstCard = dashboardPage.getCardBalance(firstCardInfo);
+        var balanceSecondCard = dashboardPage.getCardBalance(secondCardInfo);
+        var moneyTransfer = dashboardPage.firstCardButton();
+        var infoCard = DataHelper.getFirstCardNumber();
         moneyTransfer.validTransfer(amount, infoCard);
-        int expectedBalanceFirstCard = balanceFirstCard + Integer.parseInt(amount);
-        int expectedBalanceSecondCard = balanceSecondCard - Integer.parseInt(amount);
-        assertEquals(expectedBalanceFirstCard, dashboardPage.getFirstCardBalance());
-        assertEquals(expectedBalanceSecondCard, dashboardPage.getSecondCardBalance());
+        var expectedBalanceFirstCard = balanceFirstCard - Integer.parseInt(amount);
+        var expectedBalanceSecondCard = balanceSecondCard + Integer.parseInt(amount);
+        var actualBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo);
+        var actualBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo);
+        assertEquals(expectedBalanceFirstCard, actualBalanceFirstCard);
+        assertEquals(expectedBalanceSecondCard, actualBalanceSecondCard);
     }
 
+    @Test
+    void shouldTransferMoneyTo2CardMoreThanBalance() {//Должно появиться сообщение об ошибке
+        String amount = "9800";
+        var moneyTransfer = dashboardPage.firstCardButton();
+        var infoCard = DataHelper.getFirstCardNumber();
+        moneyTransfer.validTransfer(amount, infoCard);
+        moneyTransfer.getErrorNotification();
+
 
     }
 
+}
